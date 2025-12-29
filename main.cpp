@@ -55,6 +55,20 @@ int main() {
     std::cout << "FOUT: " << result << std::endl;
   }
 
+  // Hoeveel gpu's heb ik.?
+  uint32_t deviceCount = 0;
+  vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+
+  // Geef me lijst van al die devices
+  std::vector<VkPhysicalDevice> devices(deviceCount);
+  vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+
+  VkPhysicalDeviceProperties deviceProperties;
+  for (uint32_t i = 0; i < deviceCount; i++) {
+    VkPhysicalDevice device = devices[i];
+    vkGetPhysicalDeviceProperties(device, &deviceProperties);
+    std::cout << "GPU gevonden: " << deviceProperties.deviceName << std::endl;
+  }
   // SDL_Renderer *renderer =
   //     SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
