@@ -107,7 +107,9 @@ int main() {
   deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
   deviceCreateInfo.queueCreateInfoCount = 1;
   deviceCreateInfo.pQueueCreateInfos = &queueCreateInfo;
-
+  deviceCreateInfo.enabledExtensionCount = 1;
+  const char *deviceExtensions[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+  deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions;
   VkDevice logicalDevice;
   result = vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr,
                           &logicalDevice);
@@ -188,7 +190,21 @@ int main() {
   swapchainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
 
   // resolutie
-  swapchainCreateInfo.imageExtent = capabilities.currentExtent;
+  VkExtent2D extent;
+  if (capabilities.currentExtent.width != UINT32_MAX) {
+    extent = capabilities.currentExtent;
+  } else {
+    int width, height;
+    SDL_Vulkan_GetDrawableSize(window, &width, &height);
+    extent.width = std::max(capabilities.minImageExtent.width,
+                            std::min(capabilities.maxImageExtent.width,
+                                     static_cast<uint32_t>(width)));
+    extent.height = std::max(capabilities.minImageExtent.height,
+                             std::min(capabilities.maxImageExtent.height,
+                                      static_cast<uint32_t>(height)));
+  }
+
+  swapchainCreateInfo.imageExtent = extent;
   swapchainCreateInfo.imageArrayLayers = 1;
   swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
