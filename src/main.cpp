@@ -2,6 +2,7 @@
 #include <SDL2/SDL_vulkan.h>
 #include <vulkan/vulkan.h>
 
+#include <fstream>
 #include <iostream>
 #include <vector>
 
@@ -278,6 +279,31 @@ int main() {
 
     VkRenderPass renderPass;
     vkCreateRenderPass(logicalDevice, &renderPassInfo, nullptr, &renderPass);
+
+    // Shaders lezen
+    std::ifstream vertFile("shaders/vert.spv", std::ios::binary);
+    std::vector<char> vertCode((std::istreambuf_iterator<char>(vertFile)),
+                               std::istreambuf_iterator<char>());
+
+    VkShaderModuleCreateInfo vertCreateInfo{};
+    vertCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    vertCreateInfo.codeSize = vertCode.size();
+    vertCreateInfo.pCode = reinterpret_cast<const uint32_t*>(vertCode.data());
+
+    VkShaderModule vertShaderModule;
+    vkCreateShaderModule(logicalDevice, &vertCreateInfo, nullptr, &vertShaderModule);
+
+    std::ifstream fragFile("shaders/frag.spv", std::ios::binary);
+    std::vector<char> fragCode((std::istreambuf_iterator<char>(fragFile)),
+                               std::istreambuf_iterator<char>());
+
+    VkShaderModuleCreateInfo fragCreateInfo{};
+    fragCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    fragCreateInfo.codeSize = fragCode.size();
+    fragCreateInfo.pCode = reinterpret_cast<const uint32_t*>(fragCode.data());
+    VkShaderModule fragShaderModule;
+    vkCreateShaderModule(logicalDevice, &fragCreateInfo, nullptr, &fragShaderModule);
+
     // bool running = true;
     // SDL_Event event;
 
@@ -294,6 +320,8 @@ int main() {
     //   SDL_Delay(16);
     // }
 
+    vkDestroyShaderModule(logicalDevice, fragShaderModule, nullptr);
+    vkDestroyShaderModule(logicalDevice, vertShaderModule, nullptr);
     vkDestroyRenderPass(logicalDevice, renderPass, nullptr);
     for (uint32_t i = 0; i < imageCount; i++) {
         vkDestroyImageView(logicalDevice, swapchainImageViews[i], nullptr);
